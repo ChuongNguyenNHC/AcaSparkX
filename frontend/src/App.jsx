@@ -6,4 +6,5 @@ function App() {
   );
 }
 
+// xin chào
 export default App;
