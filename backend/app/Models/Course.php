@@ -14,6 +14,7 @@ class Course extends Model
         'instructor_id',
         'title',
         'description',
+        'thumbnail',
         'status',
     ];
 

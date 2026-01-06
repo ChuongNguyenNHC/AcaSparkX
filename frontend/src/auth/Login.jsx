@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Login.css';
 import api from '../api/api';
 
@@ -7,18 +9,23 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState(null);
+    const [showPassword, setShowPassword] = useState({
+        login: false,
+        register: false,
+        confirm: false
+    });
+    const navigate = useNavigate();
 
-    // ... initial formData ...
+    // Dữ liệu ban đầu form
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
         password: '',
         confirmPassword: '',
         role: 'student',
-        rememberMe: false,
     });
 
-    // Clear messages and reset form when switching modes
+    // Xóa form data khi chuyển đổi mode
     useEffect(() => {
         setError(null);
         setMessage(null);
@@ -28,17 +35,21 @@ const Login = () => {
             password: '',
             confirmPassword: '',
             role: 'student',
-            rememberMe: false,
         });
+        setShowPassword({ login: false, register: false, confirm: false });
     }, [authMode]);
 
     const handleChange = (e) => {
         setError(null);
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: value,
         }));
+    };
+
+    const togglePasswordVisibility = (field) => {
+        setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
     };
 
     const handleSubmit = async (e) => {
@@ -60,7 +71,7 @@ const Login = () => {
                     email: formData.email,
                     password: formData.password,
                     password_confirmation: formData.confirmPassword,
-                    position: formData.role, // Sử dụng role cho position
+                    position: formData.role, // Mặc định là student
                 });
             } else {
                 // Logic cho Quên mật khẩu
@@ -75,13 +86,15 @@ const Login = () => {
                 localStorage.setItem('user', JSON.stringify(user));
                 setMessage(response.data.message);
 
-                // Demo: Sau 2s chuyển hướng (nếu cần)
+                // Redirect to courses page
                 console.log('User logged in:', user);
+                setTimeout(() => {
+                    navigate('/courses');
+                }, 1000);
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
             if (err.response?.data?.errors) {
-                // Hiển thị lỗi validation chi tiết nếu cần
                 console.error('Validation errors:', err.response.data.errors);
             }
         } finally {
@@ -135,9 +148,9 @@ const Login = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="login-password">Mật khẩu</label>
-                                    <div className="input-wrapper">
+                                    <div className="input-wrapper password-wrapper">
                                         <input
-                                            type="password"
+                                            type={showPassword.login ? "text" : "password"}
                                             id="login-password"
                                             name="password"
                                             placeholder="••••••••"
@@ -145,19 +158,18 @@ const Login = () => {
                                             onChange={handleChange}
                                             required={authMode === 'login'}
                                         />
+                                        <button
+                                            type="button"
+                                            className="password-toggle"
+                                            onClick={() => togglePasswordVisibility('login')}
+                                        >
+                                            {showPassword.login ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div className="form-options">
-                                    <label className="remember-me">
-                                        <input
-                                            type="checkbox"
-                                            name="rememberMe"
-                                            checked={formData.rememberMe}
-                                            onChange={handleChange}
-                                        />
-                                        Ghi nhớ đăng nhập
-                                    </label>
+                                    <div className="spacer"></div>
                                     <a href="#" className="forgot-password" onClick={(e) => { e.preventDefault(); setAuthMode('forgot'); }}>
                                         Quên mật khẩu?
                                     </a>
@@ -184,25 +196,6 @@ const Login = () => {
                             {message && <div className="auth-message">{message}</div>}
 
                             <form onSubmit={handleSubmit}>
-                                <div className="role-selector">
-                                    <button
-                                        type="button"
-                                        className={`role-btn ${formData.role === 'student' ? 'active' : ''}`}
-                                        onClick={() => setFormData({ ...formData, role: 'student' })}
-                                    >
-                                        <span className="role-icon">👨‍🎓</span>
-                                        Học sinh
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`role-btn ${formData.role === 'teacher' ? 'active' : ''}`}
-                                        onClick={() => setFormData({ ...formData, role: 'teacher' })}
-                                    >
-                                        <span className="role-icon">👨‍🏫</span>
-                                        Giáo viên
-                                    </button>
-                                </div>
-
                                 <div className="form-group">
                                     <label htmlFor="reg-fullname">Họ và tên</label>
                                     <div className="input-wrapper">
@@ -235,9 +228,9 @@ const Login = () => {
 
                                 <div className="form-group">
                                     <label htmlFor="reg-password">Mật khẩu</label>
-                                    <div className="input-wrapper">
+                                    <div className="input-wrapper password-wrapper">
                                         <input
-                                            type="password"
+                                            type={showPassword.register ? "text" : "password"}
                                             id="reg-password"
                                             name="password"
                                             placeholder="••••••••"
@@ -245,15 +238,22 @@ const Login = () => {
                                             onChange={handleChange}
                                             required={authMode === 'register'}
                                         />
-                                        <small className="input-hint">Tối thiểu 8 ký tự</small>
+                                        <button
+                                            type="button"
+                                            className="password-toggle"
+                                            onClick={() => togglePasswordVisibility('register')}
+                                        >
+                                            {showPassword.register ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
                                     </div>
+                                    <small className="input-hint">Tối thiểu 8 ký tự</small>
                                 </div>
 
                                 <div className="form-group">
                                     <label htmlFor="reg-confirm">Xác nhận mật khẩu</label>
-                                    <div className="input-wrapper">
+                                    <div className="input-wrapper password-wrapper">
                                         <input
-                                            type="password"
+                                            type={showPassword.confirm ? "text" : "password"}
                                             id="reg-confirm"
                                             name="confirmPassword"
                                             placeholder="••••••••"
@@ -261,6 +261,13 @@ const Login = () => {
                                             onChange={handleChange}
                                             required={authMode === 'register'}
                                         />
+                                        <button
+                                            type="button"
+                                            className="password-toggle"
+                                            onClick={() => togglePasswordVisibility('confirm')}
+                                        >
+                                            {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
                                     </div>
                                 </div>
 

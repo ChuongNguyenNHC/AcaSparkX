@@ -276,6 +276,41 @@
     max-height: 20px;
 }
 
+/* Password Toggle Config */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s;
+    outline: none;
+}
+
+.password-toggle:hover {
+    color: var(--primary-green);
+}
+
+.password-toggle:focus {
+    color: var(--primary-green);
+}
+
+.password-wrapper input {
+    padding-right: 40px;
+    /* Make space for eye icon */
+}
+
 .form-options {
     display: flex;
     justify-content: space-between;
