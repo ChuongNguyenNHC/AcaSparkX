@@ -17,7 +17,6 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'position' => 'nullable|string|max:255',
             'salary' => 'nullable|numeric',
         ]);
 
@@ -29,13 +28,20 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $creatorId = auth()->id();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'position' => $request->position,
             'salary' => $request->salary,
+            'created_by' => $creatorId, // Will be null if guest
         ]);
+
+        // If self-registering (no creator found in session), use the user's own ID
+        if (!$creatorId) {
+            $user->update(['created_by' => $user->id]);
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

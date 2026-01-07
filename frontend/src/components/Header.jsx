@@ -1,5 +1,5 @@
-import api from '../api/api';
 import React, { useState, useRef, useEffect } from 'react';
+import { useUser } from '../context/UserContext';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaCog, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
@@ -8,38 +8,10 @@ import './Header.css';
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [dropdownCurrentPos, setDropdownCurrentPos] = useState({ top: 0, left: 0 });
-    const [user, setUser] = useState(() => {
-        // Khởi tạo user ngay từ localStorage để tránh flicker
-        const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
+    const { user, logout } = useUser();
     const buttonRef = useRef(null);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
-
-    // Fetch User Data
-    useEffect(() => {
-        const fetchUser = async () => {
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                try {
-                    const response = await api.get('/user');
-                    const freshUser = response.data;
-                    setUser(freshUser);
-                    localStorage.setItem('user', JSON.stringify(freshUser));
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
-                    if (error.response?.status === 401) {
-                        localStorage.removeItem('access_token');
-                        localStorage.removeItem('user');
-                        setUser(null);
-                    }
-                }
-            }
-        };
-
-        fetchUser();
-    }, []);
 
     // Tính toán vị trí và toggle
     const toggleDropdown = (e) => {
@@ -92,9 +64,7 @@ const Header = () => {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        console.log('Logging out...');
-        localStorage.removeItem('access_token');
-        setUser(null);
+        logout();
         setIsOpen(false);
         navigate('/');
     };
