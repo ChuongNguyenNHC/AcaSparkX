@@ -1,30 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { courseAPI } from '../api/api';
 import './CourseSelection.css';
 
-const courses = [
-  {
-    id: 1,
-    title: 'Lập trình C#',
-    description: 'Thành thạo C# và .NET framework để xây dựng các ứng dụng Windows và Web mạnh mẽ.',
-    image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 2,
-    title: 'Python cho người mới bắt đầu',
-    description: 'Học Python từ con số 0. Tuyệt vời cho khoa học dữ liệu, phát triển web và tự động hóa.',
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 3,
-    title: 'C++ Cơ bản',
-    description: 'Đi sâu vào C++ để hiểu quản lý bộ nhớ và tính toán hiệu năng cao.',
-    image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  }
-];
-
 const CourseSelection = () => {
+  const navigate = useNavigate();
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log("Fetching courses...");
+        const response = await courseAPI.getAll();
+        console.log("Courses response:", response.data);
+        setCourses(response.data.data || []);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        setError("Không thể tải danh sách khóa học. Vui lòng kiểm tra kết nối server.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  const handleCourseClick = (courseId) => {
+    navigate(`/course/${courseId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="course-page-container">
+        <Header />
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Đang tải danh sách khóa học...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="course-page-container">
+        <Header />
+        <div className="error-container" style={{ textAlign: 'center', padding: '50px' }}>
+          <p style={{ color: '#ff4d4d', fontSize: '1.2rem' }}>{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ padding: '10px 20px', marginTop: '20px', cursor: 'pointer' }}
+          >
+            Thử lại
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (courses.length === 0) {
+    return (
+      <div className="course-page-container">
+        <Header />
+        <div className="empty-container" style={{ textAlign: 'center', padding: '50px' }}>
+          <p style={{ color: '#888' }}>Không có khóa học nào được tìm thấy. Bạn đã chạy Seeder chưa?</p>
+          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', marginTop: '20px', cursor: 'pointer' }}>Làm mới</button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="course-page-container">
       <Header />
@@ -33,13 +86,18 @@ const CourseSelection = () => {
         <div className="course-grid">
           {courses.map(course => (
             <div key={course.id} className="course-card">
-              <div className="course-image-wrapper">
-                <img src={course.image} alt={course.title} className="course-image" />
+              <div className="course-image-wrapper" style={{ '--bg-url': `url(${course.thumbnail})` }}>
+                <img src={course.thumbnail} alt={course.title} className="course-image" />
               </div>
               <div className="course-content">
                 <h3 className="course-title">{course.title}</h3>
                 <p className="course-description">{course.description}</p>
-                <button className="enroll-btn">Xem chi tiết</button>
+                <button
+                  className="enroll-btn"
+                  onClick={() => handleCourseClick(course.id)}
+                >
+                  Xem chi tiết
+                </button>
               </div>
             </div>
           ))}

@@ -23,7 +23,6 @@ class User extends Authenticatable
         'email',
         'password',
         'phone_number',
-        'position',
         'salary',
         'cv_status',
         'role',
@@ -68,5 +67,15 @@ class User extends Authenticatable
     public function results()
     {
         return $this->hasMany(Result::class, 'student_id');
+    }
+
+    public function lessonRatings()
+    {
+        return $this->hasMany(LessonRating::class);
+    }
+
+    public function registrar()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

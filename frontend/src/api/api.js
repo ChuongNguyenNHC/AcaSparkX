@@ -17,4 +17,13 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export const courseAPI = {
+    getAll: () => api.get('/courses'),
+    getDetails: (id) => api.get(`/courses/${id}`),
+};
+
+export const lessonAPI = {
+    rate: (lessonId, stars) => api.post('/lessons/rate', { lesson_id: lessonId, stars }),
+};
+
 export default api;
