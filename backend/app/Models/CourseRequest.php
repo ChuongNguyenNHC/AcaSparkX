@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Course extends Model
+class CourseRequest extends Model
 {
     use HasFactory, HasUuids;
 
     protected $fillable = [
         'instructor_id',
+        'course_id',
         'title',
         'description',
-        'thumbnail',
         'status',
+        'video_url',
+        'admin_note',
     ];
 
     public function instructor()
@@ -23,18 +25,8 @@ class Course extends Model
         return $this->belongsTo(User::class, 'instructor_id');
     }
 
-    public function enrollments()
+    public function course()
     {
-        return $this->hasMany(Enrollment::class);
-    }
-
-    public function lessons()
-    {
-        return $this->hasMany(Lesson::class)->orderBy('order');
-    }
-
-    public function requests()
-    {
-        return $this->hasMany(CourseRequest::class);
+        return $this->belongsTo(Course::class);
     }
 }

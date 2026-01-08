@@ -14,6 +14,7 @@ Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/{id}', [CourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/lessons/rate', [RatingController::class, 'rateLesson']);
     Route::get('/user', function (Request $request) {

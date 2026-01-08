@@ -20,6 +20,7 @@ api.interceptors.request.use((config) => {
 export const courseAPI = {
     getAll: () => api.get('/courses'),
     getDetails: (id) => api.get(`/courses/${id}`),
+    enroll: (id) => api.post(`/courses/${id}/enroll`),
 };
 
 export const lessonAPI = {

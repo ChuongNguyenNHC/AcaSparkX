@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\Lesson;
+use App\Models\Enrollment;
 use Illuminate\Support\Facades\Cache;
 
 class CourseController extends Controller
@@ -58,6 +59,32 @@ class CourseController extends Controller
         return response()->json([
             'success' => true,
             'data' => $data
+        ]);
+    }
+
+    public function enroll($id)
+    {
+        $user = auth()->user();
+
+        // Chỉ lưu thông tin vào bảng ENROLLMENTS nếu là học viên (student)
+        if ($user->role === 'student') {
+            $enrollment = Enrollment::updateOrCreate(
+                ['user_id' => $user->id, 'course_id' => $id],
+                ['enroll_date' => now(), 'progress' => 0]
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ghi danh thành công!',
+                'data' => $enrollment
+            ]);
+        }
+
+        // Nếu là GV hoặc Admin, cho phép vào xem bài học mà không cần lưu bản ghi
+        return response()->json([
+            'success' => true,
+            'message' => 'Truy cập với quyền ' . $user->role,
+            'data' => null
         ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Lesson;
 use App\Models\Enrollment;
 use App\Models\LessonRating;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AcaSparkSeeder extends Seeder
@@ -17,13 +18,27 @@ class AcaSparkSeeder extends Seeder
      */
     public function run(): void
     {
-        $instructor = User::first();
-        $student = User::first();
+        // 1. Create initial users
+        $admin = User::create([
+            'name' => 'System Admin',
+            'email' => 'admin@acaspark.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
 
-        if (!$instructor) {
-            $this->command->warn('No users found. Please register a user first before seeding courses.');
-            return;
-        }
+        $teacher = User::create([
+            'name' => 'Nguyễn Hoàn Chương',
+            'email' => 'teacher@acaspark.com',
+            'password' => Hash::make('password'),
+            'role' => 'teacher',
+        ]);
+
+        $student = User::create([
+            'name' => 'Học Viên A',
+            'email' => 'student@acaspark.com',
+            'password' => Hash::make('password'),
+            'role' => 'student',
+        ]);
 
         $courses = [
             [
@@ -75,7 +90,7 @@ class AcaSparkSeeder extends Seeder
 
         foreach ($courses as $cData) {
             $course = Course::create([
-                'instructor_id' => $instructor->id,
+                'instructor_id' => $teacher->id,
                 'title' => $cData['title'],
                 'description' => $cData['description'],
                 'thumbnail' => $cData['thumbnail'],
