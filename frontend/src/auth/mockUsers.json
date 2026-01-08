@@ -1,0 +1,17 @@
+{
+    "student@example.com": {
+        "id": 1,
+        "name": "Student User",
+        "role": "user"
+    },
+    "teacher@example.com": {
+        "id": 2,
+        "name": "Teacher User",
+        "role": "teacher"
+    },
+    "admin@example.com": {
+        "id": 3,
+        "name": "Admin User",
+        "role": "admin"
+    }
+}
