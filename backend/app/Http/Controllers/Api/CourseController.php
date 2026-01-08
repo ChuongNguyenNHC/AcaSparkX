@@ -23,6 +23,7 @@ class CourseController extends Controller
         ]);
     }
 
+    // Hiển thị chi tiết khóa học
     public function show($id)
     {
         $userId = auth('sanctum')->id();
@@ -45,7 +46,6 @@ class CourseController extends Controller
             $lessons = $course->lessons->map(function ($lesson) {
                 $lesson->avg_rating = round($lesson->avg_rating ?? 0, 1);
                 $lesson->user_rating = $lesson->ratings->first()?->stars ?? 0;
-                // Clean up relationships we don't need in the final JSON
                 unset($lesson->ratings);
                 return $lesson;
             });
@@ -62,6 +62,7 @@ class CourseController extends Controller
         ]);
     }
 
+    // Lưu thông tin ghi danh khóa học
     public function enroll($id)
     {
         $user = auth()->user();
