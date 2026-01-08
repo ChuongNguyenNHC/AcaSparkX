@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class RatingController extends Controller
 {
+    // Đánh giá bài học
     public function rateLesson(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -34,8 +35,6 @@ class RatingController extends Controller
         );
 
         $lesson = \App\Models\Lesson::find($request->lesson_id);
-
-        // Invalidate Cache for this course and user
         $courseId = $lesson->course_id;
         Cache::store('file')->forget("course_details_{$courseId}_{$userId}");
         Cache::store('file')->forget("course_details_{$courseId}_guest");

@@ -15,6 +15,7 @@ class Question extends Model
         'content',
         'score',
         'type',
+        'explanation',
     ];
 
     public function assignment()
