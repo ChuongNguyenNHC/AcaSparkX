@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('results', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('assignment_id')->constrained('assignments')->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('student_id')->constrained('users')->cascadeOnDelete();
             $table->float('score');
             $table->dateTime('submit_time');
             $table->timestamps();

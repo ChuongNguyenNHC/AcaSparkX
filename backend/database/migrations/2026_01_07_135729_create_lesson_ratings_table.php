@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('lesson_ratings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('lesson_id')->constrained('lessons')->cascadeOnDelete();
             $table->integer('stars');
             $table->text('comment')->nullable();

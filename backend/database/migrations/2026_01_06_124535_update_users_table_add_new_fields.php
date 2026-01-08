@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->string('cv_status')->nullable();
             $table->string('role')->default('student');
             $table->string('status')->default('active');
-            $table->string('created_by')->nullable();
-            $table->string('updated_by')->nullable();
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
         });
     }
 

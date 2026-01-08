@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import mockUsers from './mockUsers.json';
+import { useUser } from '../context/UserContext';
 
 const useAuthForm = () => {
     const [authMode, setAuthMode] = useState('login'); // 'login', 'register', 'forgot'
@@ -14,6 +15,7 @@ const useAuthForm = () => {
         confirm: false
     });
     const navigate = useNavigate();
+    const { setUser } = useUser();
 
     // Dữ liệu ban đầu form
     const [formData, setFormData] = useState({
@@ -100,12 +102,19 @@ const useAuthForm = () => {
 
             if (response.data.status === 'success') {
                 const { access_token, user } = response.data.data;
-                localStorage.setItem('access_token', access_token);
-                localStorage.setItem('user', JSON.stringify(user));
                 setMessage(response.data.message);
 
-                // Redirect to respective pages based on role
-                console.log('User logged in:', user);
+                // If registration, just show success and stop
+                if (authMode === 'register') {
+                    setLoading(false);
+                    return;
+                }
+
+                localStorage.setItem('access_token', access_token);
+                localStorage.setItem('user', JSON.stringify(user));
+                setUser(user); // Sync State!
+
+                // Redirect to respective pages based on role for login
                 setTimeout(() => {
                     if (user.role === 'admin' || user.role === 'teacher') {
                         navigate('/management');

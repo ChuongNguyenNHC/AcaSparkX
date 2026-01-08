@@ -124,7 +124,7 @@ const Header = () => {
                             {isOpen && createPortal(dropdownContent, document.body)}
                         </>
                     ) : (
-                        <Link to="/login" className="nav-link">Đăng nhập</Link>
+                        <Link to="/" className="nav-link">Đăng nhập</Link>
                     )}
                 </div>
             </nav>

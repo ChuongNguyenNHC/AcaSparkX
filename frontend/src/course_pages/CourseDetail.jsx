@@ -11,6 +11,7 @@ const CourseDetail = () => {
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [enrolling, setEnrolling] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -30,8 +31,18 @@ const CourseDetail = () => {
         fetchDetails();
     }, [courseId]);
 
-    const handleStartLearning = () => {
-        navigate(`/course/${courseId}/learn`);
+    const handleStartLearning = async () => {
+        try {
+            setEnrolling(true);
+            // Ghi danh người dùng trước khi vào học (FirstOrCreate ở backend)
+            await courseAPI.enroll(courseId);
+            navigate(`/course/${courseId}/learn`);
+        } catch (err) {
+            console.error("Enrollment failed:", err);
+            navigate(`/course/${courseId}/learn`);
+        } finally {
+            setEnrolling(false);
+        }
     };
 
     if (loading) {
@@ -75,16 +86,22 @@ const CourseDetail = () => {
                         <p className="hero-desc">{course.description}</p>
 
                         <div className="hero-actions">
-                            <div className="instructor-info">
-                                <img src={course.instructor?.avatar || `https://ui-avatars.com/api/?name=${course.instructor?.name}&background=10b981&color=fff`} alt="Instructor" className="instructor-avatar" />
-                                <div className="instructor-details">
-                                    <p className="instructor-label">Giảng viên</p>
-                                    <p className="instructor-name">{course.instructor?.name || 'Giảng viên'}</p>
+                            {course.instructor?.role === 'teacher' && (
+                                <div className="instructor-info">
+                                    <img src={course.instructor?.avatar || `https://ui-avatars.com/api/?name=${course.instructor?.name}&background=10b981&color=fff`} alt="Instructor" className="instructor-avatar" />
+                                    <div className="instructor-details">
+                                        <p className="instructor-label">Giảng viên</p>
+                                        <p className="instructor-name">{course.instructor?.name || 'Giảng viên'}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            <button className="start-learning-btn" onClick={handleStartLearning}>
-                                Vào học ngay
+                            <button
+                                className="start-learning-btn"
+                                onClick={handleStartLearning}
+                                disabled={enrolling}
+                            >
+                                {enrolling ? 'Đang ghi danh...' : 'Vào học ngay'}
                             </button>
                         </div>
                     </div>

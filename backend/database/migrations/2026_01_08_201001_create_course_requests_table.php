@@ -5,26 +5,23 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
+        Schema::create('course_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('instructor_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('course_id')->nullable()->constrained('courses')->nullOnDelete();
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('status')->default('draft');
+            $table->text('description');
+            $table->string('status')->default('pending');
+            $table->string('video_url')->nullable();
+            $table->text('admin_note')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('courses');
+        Schema::dropIfExists('course_requests');
     }
 };
