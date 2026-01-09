@@ -17,6 +17,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'nullable|string|in:admin,teacher,student', // Validate role
             'salary' => 'nullable|numeric',
         ]);
 
@@ -34,6 +35,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role ?? 'student', // Default to student
             'salary' => $request->salary,
             'created_by' => $creatorId, // Will be null if guest
         ]);
@@ -81,6 +83,15 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if ($user->status === 'banned') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Tài khoản bị vô hiệu hóa hãy liên hệ với admin để được hỗ trợ'
+            ], 403);
+        }
+
+        \Illuminate\Support\Facades\Log::info('User Logged In:', ['id' => $user->id, 'email' => $user->email, 'role' => $user->role]);
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -102,6 +113,39 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Đăng xuất thành công'
+        ]);
+    }
+    /* Đổi Mật Khẩu */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Mật khẩu hiện tại không chính xác'
+            ], 401);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đổi mật khẩu thành công'
         ]);
     }
 }
