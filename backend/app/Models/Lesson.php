@@ -33,4 +33,9 @@ class Lesson extends Model
     {
         return $this->hasMany(LessonRating::class);
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(LessonAttachment::class);
+    }
 }
