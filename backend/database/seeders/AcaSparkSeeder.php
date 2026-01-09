@@ -19,26 +19,32 @@ class AcaSparkSeeder extends Seeder
     public function run(): void
     {
         // 1. Create initial users
-        $admin = User::create([
-            'name' => 'System Admin',
-            'email' => 'admin@acaspark.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@acaspark.com'],
+            [
+                'name' => 'System Admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        $teacher = User::create([
-            'name' => 'Nguyễn Hoàn Chương',
-            'email' => 'teacher@acaspark.com',
-            'password' => Hash::make('password'),
-            'role' => 'teacher',
-        ]);
+        $teacher = User::firstOrCreate(
+            ['email' => 'teacher@acaspark.com'],
+            [
+                'name' => 'Giảng viên 1',
+                'password' => Hash::make('password'),
+                'role' => 'teacher',
+            ]
+        );
 
-        $student = User::create([
-            'name' => 'Học Viên A',
-            'email' => 'student@acaspark.com',
-            'password' => Hash::make('password'),
-            'role' => 'student',
-        ]);
+        $student = User::firstOrCreate(
+            ['email' => 'student@acaspark.com'],
+            [
+                'name' => 'Học Viên A',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+            ]
+        );
 
         $courses = [
             [
@@ -85,17 +91,38 @@ class AcaSparkSeeder extends Seeder
                         'order' => 1
                     ],
                 ]
+            ],
+            [
+                'title' => 'Lập trình PHP từ cơ bản đến nâng cao',
+                'description' => 'Khóa học toàn diện về PHP, từ cú pháp cơ bản đến xây dựng ứng dụng web động với Laravel.',
+                'thumbnail' => 'https://res.cloudinary.com/djrjaueb0/image/upload/v1767966443/php_course_thumbnail_btvl4f.jpg',
+                'lessons' => [
+                    [
+                        'title' => 'Giới thiệu về PHP',
+                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4',
+                        'rating' => 4.8,
+                        'order' => 1
+                    ],
+                    [
+                        'title' => 'Cài đặt môi trường XAMPP',
+                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737210/elephants.mp4',
+                        'rating' => 4.6,
+                        'order' => 2
+                    ],
+                ]
             ]
         ];
 
         foreach ($courses as $cData) {
-            $course = Course::create([
-                'instructor_id' => $teacher->id,
-                'title' => $cData['title'],
-                'description' => $cData['description'],
-                'thumbnail' => $cData['thumbnail'],
-                'status' => 'published',
-            ]);
+            $course = Course::firstOrCreate(
+                ['title' => $cData['title']],
+                [
+                    'instructor_id' => $teacher->id,
+                    'description' => $cData['description'],
+                    'thumbnail' => $cData['thumbnail'],
+                    'status' => 'published',
+                ]
+            );
 
             foreach ($cData['lessons'] as $lData) {
                 $lesson = Lesson::create([
