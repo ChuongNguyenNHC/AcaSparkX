@@ -16,7 +16,24 @@ class Course extends Model
         'description',
         'thumbnail',
         'status',
+        'category_id',
+        'is_featured'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'course_tag');
+    }
+
+    public function teachers()
+    {
+        return $this->belongsToMany(User::class, 'course_teacher', 'course_id', 'teacher_id');
+    }
 
     public function instructor()
     {

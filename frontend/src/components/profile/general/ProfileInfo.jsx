@@ -1,53 +1,43 @@
 import React from 'react';
+import { useUser } from '../../../context/UserContext';
 import './general.css';
 
-const ProfileInfo = ({ user }) => {
-    // Default placeholder data if no user prop is provided
-    const userData = user || {
-        name: 'Nguyen Van A',
-        email: 'nguyenvana@example.com',
-        phone: '0901234567',
-        cvStatus: 'Not Uploaded',
-        role: 'Student',
-        status: 'Active'
-    };
+const ProfileInfo = () => {
+    const { user } = useUser();
+
+    if (!user) return <div>Đang tải...</div>;
 
     return (
         <div className="profile-info-card">
             <div className="info-header">
-                <h4>Personal Information</h4>
-                <button className="edit-btn">Edit</button>
+                <h4>Thông tin cá nhân</h4>
+                {/* <button className="edit-btn">Chỉnh sửa</button> */}
             </div>
 
             <div className="info-grid">
                 <div className="info-item">
-                    <span className="label">Full Name</span>
-                    <span className="value">{userData.name}</span>
+                    <span className="label">Họ và tên</span>
+                    <span className="value">{user.name}</span>
                 </div>
 
                 <div className="info-item">
                     <span className="label">Email</span>
-                    <span className="value">{userData.email}</span>
+                    <span className="value">{user.email}</span>
                 </div>
 
                 <div className="info-item">
-                    <span className="label">Phone Number</span>
-                    <span className="value">{userData.phone}</span>
+                    <span className="label">Số điện thoại</span>
+                    <span className="value">{user.phone_number || 'Chưa cập nhật'}</span>
                 </div>
 
                 <div className="info-item">
-                    <span className="label">Role</span>
-                    <span className="value role-badge">{userData.role}</span>
+                    <span className="label">Vai trò</span>
+                    <span className="value role-badge">{user.role.toUpperCase()}</span>
                 </div>
 
                 <div className="info-item">
-                    <span className="label">Account Status</span>
-                    <span className="value status-badge active">{userData.status}</span>
-                </div>
-
-                <div className="info-item">
-                    <span className="label">CV Status</span>
-                    <span className="value">{userData.cvStatus}</span>
+                    <span className="label">Ngày tham gia</span>
+                    <span className="value">{new Date(user.created_at).toLocaleDateString()}</span>
                 </div>
             </div>
         </div>
