@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { FaChartPie, FaUsers, FaBook, FaSignOutAlt } from 'react-icons/fa';
 import DashboardHome from './DashboardHome';
-import UserManagement from './UserManagement';
+import StudentManagement from './StudentManagement';
 import CourseManagement from './CourseManagement';
 import Header from '../Header';
 import Footer from '../Footer';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, users, courses
+    const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, students, courses
 
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard': return <DashboardHome />;
-            case 'users': return <UserManagement />;
+            case 'students': return <StudentManagement />;
             case 'courses': return <CourseManagement />;
             default: return <DashboardHome />;
         }
@@ -43,10 +43,10 @@ const AdminDashboard = () => {
                                     <FaChartPie style={styles.navIcon} /> Bảng điều khiển
                                 </button>
                                 <button
-                                    style={activeTab === 'users' ? styles.activeNavItem : styles.navItem}
-                                    onClick={() => setActiveTab('users')}
+                                    style={activeTab === 'students' ? styles.activeNavItem : styles.navItem}
+                                    onClick={() => setActiveTab('students')}
                                 >
-                                    <FaUsers style={styles.navIcon} /> Quản lý thành viên
+                                    <FaUsers style={styles.navIcon} /> Quản lý người dùng
                                 </button>
                                 <button
                                     style={activeTab === 'courses' ? styles.activeNavItem : styles.navItem}
