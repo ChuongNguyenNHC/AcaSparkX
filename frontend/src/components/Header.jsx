@@ -82,6 +82,9 @@ const Header = () => {
                 zIndex: 99999
             }}
         >
+            <Link to="/profile" className="dropdown-item" onClick={() => setIsOpen(false)}>
+                <FaUser /> <span>Hồ sơ cá nhân</span>
+            </Link>
             <Link to="/settings" className="dropdown-item" onClick={() => setIsOpen(false)}>
                 <FaCog /> <span>Cài đặt</span>
             </Link>
@@ -101,6 +104,14 @@ const Header = () => {
             </div>
 
             <nav className="nav-menu">
+                {(user?.role === 'admin' || user?.role === 'teacher') && (
+                    <Link
+                        to={user.role === 'admin' ? "/admin/dashboard" : "/teacher/dashboard"}
+                        className="nav-link management-link"
+                    >
+                        Quản lý
+                    </Link>
+                )}
                 <Link to="/courses" className="nav-link">Khóa học</Link>
                 <div className="nav-divider"></div>
 
