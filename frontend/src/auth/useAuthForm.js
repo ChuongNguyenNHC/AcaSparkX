@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
-import mockUsers from './mockUsers.json';
 import { useUser } from '../context/UserContext';
 
 const useAuthForm = () => {
@@ -23,7 +22,7 @@ const useAuthForm = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'user',
+        role: 'student',
     });
 
     // Xóa form data khi chuyển đổi mode
@@ -62,36 +61,17 @@ const useAuthForm = () => {
         try {
             let response;
             if (authMode === 'login') {
-                // MOCK LOGIN for testing
-                if (mockUsers[formData.email] && formData.password === 'password') {
-                    console.log('Using mock login for:', formData.email);
-                    response = {
-                        data: {
-                            status: 'success',
-                            message: `Đăng nhập giả lập quyền ${mockUsers[formData.email].role} thành công!`,
-                            data: {
-                                access_token: `mock-token-${mockUsers[formData.email].role}`,
-                                user: {
-                                    email: formData.email,
-                                    avatar: null,
-                                    ...mockUsers[formData.email]
-                                }
-                            }
-                        }
-                    };
-                } else {
-                    response = await api.post('/login', {
-                        email: formData.email,
-                        password: formData.password,
-                    });
-                }
+                response = await api.post('/login', {
+                    email: formData.email,
+                    password: formData.password,
+                });
             } else if (authMode === 'register') {
                 response = await api.post('/register', {
                     name: formData.fullName,
                     email: formData.email,
                     password: formData.password,
                     password_confirmation: formData.confirmPassword,
-                    position: 'user', // Force user role
+                    // role defaults to 'student' in backend if omitted, or we can send it
                 });
             } else {
                 // Logic cho Quên mật khẩu
@@ -102,6 +82,9 @@ const useAuthForm = () => {
 
             if (response.data.status === 'success') {
                 const { access_token, user } = response.data.data;
+                console.log('Login Response User:', user);
+                console.log('Login User Role:', user.role);
+
                 setMessage(response.data.message);
 
                 // If registration, just show success and stop
@@ -114,13 +97,10 @@ const useAuthForm = () => {
                 localStorage.setItem('user', JSON.stringify(user));
                 setUser(user); // Sync State!
 
-                // Redirect to respective pages based on role for login
+                // Redirect to courses for ALL roles
                 setTimeout(() => {
-                    if (user.role === 'admin' || user.role === 'teacher') {
-                        navigate('/management');
-                    } else {
-                        navigate('/courses');
-                    }
+                    console.log('Redirecting to /courses');
+                    navigate('/courses');
                 }, 1000);
             }
         } catch (err) {
