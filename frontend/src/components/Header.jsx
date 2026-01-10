@@ -7,7 +7,7 @@ import { courseAPI } from '../api/api';
 import './Header.css';
 
 const Header = () => {
-    const [activeDropdown, setActiveDropdown] = useState(null); 
+    const [activeDropdown, setActiveDropdown] = useState(null);
     const [dropdownCurrentPos, setDropdownCurrentPos] = useState({ top: 0, left: 0 });
     const { user, logout } = useUser();
     const navigate = useNavigate();
@@ -26,7 +26,6 @@ const Header = () => {
         borderRadius: '8px',
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
         zIndex: 9999,
-        padding: '8px 0',
         border: '1px solid #334155'
     };
 
