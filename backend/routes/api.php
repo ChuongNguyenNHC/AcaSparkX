@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\TeacherCourseController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\RatingController;
@@ -15,7 +16,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/{id}', [CourseController::class, 'show']);
-
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 Route::post('/chatbot/consult', [ChatbotController::class, 'consult']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -36,6 +37,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/lessons', [TeacherContentController::class, 'store']);
         Route::post('/lessons/{id}', [TeacherContentController::class, 'update']); // Using POST for update with file upload often easier
         Route::delete('/lessons/{id}', [TeacherContentController::class, 'destroy']);
+
+        Route::get('/courses', [TeacherCourseController::class, 'index']);
+        Route::post('/courses', [TeacherCourseController::class, 'storeCourse']);
+        Route::put('/courses/{id}', [TeacherCourseController::class, 'updateCourse']);
+        Route::delete('/courses/{id}', [TeacherCourseController::class, 'destroyCourse']);
+        Route::get('/stats', [TeacherCourseController::class, 'getStats']);
+        Route::get('/courses', [TeacherCourseController::class, 'index']);
+        Route::post('/courses', [TeacherCourseController::class, 'storeCourse']);
 
         // Course Requests
         Route::get('/requests', [CourseRequestController::class, 'index']);
@@ -63,5 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Categories & Tags
         Route::apiResource('/categories', \App\Http\Controllers\Api\AdminCategoryController::class);
         Route::apiResource('/tags', \App\Http\Controllers\Api\AdminTagController::class);
+
+
     });
 });
