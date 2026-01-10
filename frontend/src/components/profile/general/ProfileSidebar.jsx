@@ -35,11 +35,7 @@ const ProfileSidebar = () => {
                 </li>
             </ul>
 
-            <div className="sidebar-footer">
-                <button className="logout-btn" onClick={logout}>
-                    Đăng xuất
-                </button>
-            </div>
+
         </aside>
     );
 };

@@ -3,9 +3,10 @@ import { FaBook, FaList, FaTags, FaClipboardCheck } from 'react-icons/fa';
 import CourseList from './course/CourseList';
 import CategoryManager from './course/CategoryManager';
 import TagManager from './course/TagManager';
+import CourseRequests from './course/CourseRequests';
 
 const CourseManagement = () => {
-    const [activeTab, setActiveTab] = useState('courses'); // courses, moderation, categories, tags
+    const [activeTab, setActiveTab] = useState('courses'); // courses, moderation, requests, categories, tags
 
     return (
         <div style={{ animation: 'fadeIn 0.3s ease-in-out' }}>
@@ -15,7 +16,7 @@ const CourseManagement = () => {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px', overflowX: 'auto' }}>
                 <TabButton
                     active={activeTab === 'courses'}
                     onClick={() => setActiveTab('courses')}
@@ -27,6 +28,12 @@ const CourseManagement = () => {
                     onClick={() => setActiveTab('moderation')}
                     icon={<FaClipboardCheck />}
                     label="Kiểm duyệt (Pending)"
+                />
+                <TabButton
+                    active={activeTab === 'requests'}
+                    onClick={() => setActiveTab('requests')}
+                    icon={<FaClipboardCheck />} // Reuse icon or find better one like FaEnvelopeOpenText
+                    label="Yêu cầu dạy"
                 />
                 <TabButton
                     active={activeTab === 'categories'}
@@ -46,6 +53,7 @@ const CourseManagement = () => {
             <div>
                 {activeTab === 'courses' && <CourseList type="all" />}
                 {activeTab === 'moderation' && <CourseList type="pending" />}
+                {activeTab === 'requests' && <CourseRequests />}
                 {activeTab === 'categories' && <CategoryManager />}
                 {activeTab === 'tags' && <TagManager />}
             </div>

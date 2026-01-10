@@ -16,14 +16,15 @@ class TeacherContentController extends Controller
     // List courses assigned to the current teacher
     public function index(Request $request)
     {
-        // Assuming courses have an 'instructor_id' field.
-        // If teacher can add to ANY course, logic might change, but typically they manage their own or assigned ones.
-        // Based on "teacher đăng video trong các khóa học cụ thể đó" & "admin phụ trách việc tạo khóa học"
-        // We assume Admin creates course and assigns instructor_id to Teacher.
+        $userId = $request->user()->id;
 
-        $courses = Course::where('instructor_id', $request->user()->id)
-            ->where('status', '!=', 'hidden') // Hide hidden courses from teacher
-            ->with('lessons') // Eager load lessons
+        // Strictly show only courses where the teacher is in the 'teachers' pivot
+        // We remove 'instructor_id' check because typically Admin is the creator/instructor_id.
+        $courses = Course::whereHas('teachers', function ($q) use ($userId) {
+            $q->where('id', $userId);
+        })
+            ->where('status', '!=', 'hidden')
+            ->with('lessons')
             ->get();
 
         return response()->json([
@@ -35,6 +36,10 @@ class TeacherContentController extends Controller
     // Get lessons for a specific course (optional, if not eager loaded above)
     public function getLessons($courseId)
     {
+        // Add check if teacher has access to this course?
+        // Ideally checking in 'index' is enough for UI, but for API security we should checking here too.
+        // But the user focused on 'upload video', so let's focus on mutation methods first or do it properly here.
+
         $lessons = Lesson::where('course_id', $courseId)
             ->with('attachments')
             ->orderBy('order', 'asc')
@@ -63,6 +68,20 @@ class TeacherContentController extends Controller
                 'message' => 'Dữ liệu không hợp lệ',
                 'errors' => $validator->errors()
             ], 422);
+        }
+
+        // Check Permission
+        $course = Course::find($request->course_id);
+        $userId = $request->user()->id;
+
+        // Allow if instructor_id (just in case) OR in teachers list
+        $hasPermission = $course->instructor_id === $userId || $course->teachers()->where('id', $userId)->exists();
+
+        if (!$hasPermission) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền đăng bài học cho khóa học này.'
+            ], 403);
         }
 
         // 1. Handle Video Upload
@@ -124,6 +143,18 @@ class TeacherContentController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Bài học không tồn tại'], 404);
         }
 
+        // Check Permission via Course
+        $course = $lesson->course; // Assuming Lesson belongsTo Course
+        $userId = $request->user()->id;
+        $hasPermission = $course->instructor_id === $userId || $course->teachers()->where('id', $userId)->exists();
+
+        if (!$hasPermission) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền chỉnh sửa bài học này.'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -156,11 +187,23 @@ class TeacherContentController extends Controller
     }
 
     // Delete lesson
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $lesson = Lesson::find($id);
         if (!$lesson) {
             return response()->json(['status' => 'error', 'message' => 'Bài học không tồn tại'], 404);
+        }
+
+        // Check Permission
+        $course = $lesson->course;
+        $userId = $request->user()->id;
+        $hasPermission = $course->instructor_id === $userId || $course->teachers()->where('id', $userId)->exists();
+
+        if (!$hasPermission) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền xóa bài học này.'
+            ], 403);
         }
 
         // Ideally delete video file and attachments here too

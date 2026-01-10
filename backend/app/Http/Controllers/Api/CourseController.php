@@ -8,9 +8,28 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Category;
+use App\Models\Tag;
 
 class CourseController extends Controller
 {
+    public function getCategories()
+    {
+        $categories = Category::all();
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
+
+    public function getTags()
+    {
+        $tags = Tag::all();
+        return response()->json([
+            'success' => true,
+            'data' => $tags
+        ]);
+    }
     public function index()
     {
         $courses = Course::withCount('lessons')
