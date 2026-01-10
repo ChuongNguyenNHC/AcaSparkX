@@ -7,7 +7,7 @@ import { courseAPI } from '../api/api';
 import './Header.css';
 
 const Header = () => {
-    const [activeDropdown, setActiveDropdown] = useState(null); // 'user', 'categories', 'tags'
+    const [activeDropdown, setActiveDropdown] = useState(null); 
     const [dropdownCurrentPos, setDropdownCurrentPos] = useState({ top: 0, left: 0 });
     const { user, logout } = useUser();
     const navigate = useNavigate();
@@ -16,6 +16,20 @@ const Header = () => {
     // Search State
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
+    // Khai báo biến commonStyle bị thiếu để sửa lỗi ReferenceError
+    const commonStyle = {
+        position: 'fixed',
+        top: `${dropdownCurrentPos.top}px`,
+        left: `${dropdownCurrentPos.left}px`,
+        backgroundColor: '#1e293b', // Màu nền dark để khớp với giao diện
+        minWidth: '200px',
+        borderRadius: '8px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+        zIndex: 9999,
+        padding: '8px 0',
+        border: '1px solid #334155'
+    };
+
     useEffect(() => {
         setSearchTerm(searchParams.get('search') || '');
     }, [searchParams]);
@@ -23,28 +37,15 @@ const Header = () => {
     const handleSearchChange = (e) => {
         const val = e.target.value;
         setSearchTerm(val);
-
-        // Debounce or immediate? Let's do immediate for now or simpler logic
-        // But to avoid navigating on every keystroke causing re-render issues if strict mode is on, 
-        // usually we might debounce. For now let's just update state and navigate.
         const newParams = new URLSearchParams(searchParams);
         if (val) {
             newParams.set('search', val);
         } else {
             newParams.delete('search');
         }
-
-        // Only navigate if we are on the courses page to filter instantly, 
-        // OR if correct UX is to wait for Enter.
-        // User asked for "search function", usually real-time filtering is nice.
-        // If we are NOT on /courses, we probably should wait for Enter or just direct input?
-        // Let's assume we redirect to /courses immediately if typing? 
-        // Or keep it simple: Navigate to /courses with query.
-
         navigate(`/courses?${newParams.toString()}`, { replace: true });
     };
 
-    // Data
     const [categories, setCategories] = useState([]);
     const [tags, setTags] = useState([]);
 
@@ -60,8 +61,9 @@ const Header = () => {
                     courseAPI.getPublicCategories(),
                     courseAPI.getPublicTags()
                 ]);
-                setCategories(catsRes.data.data || []);
-                setTags(tagsRes.data.data || []);
+                // Đảm bảo lấy đúng mảng dữ liệu từ API Laravel
+                setCategories(catsRes.data.data || catsRes.data || []);
+                setTags(tagsRes.data.data || tagsRes.data || []);
             } catch (error) {
                 console.error("Failed to fetch header data", error);
             }
@@ -69,11 +71,8 @@ const Header = () => {
         fetchData();
     }, []);
 
-    // Toggle logic
     const toggleDropdown = (e, type) => {
         e.stopPropagation();
-        e.preventDefault();
-
         if (activeDropdown === type) {
             setActiveDropdown(null);
             return;
@@ -83,8 +82,8 @@ const Header = () => {
 
         if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect();
-            // Adjust position based on type
             let leftPos = rect.left;
+            // Căn lề phải cho menu người dùng
             if (type === 'user') leftPos = rect.right - 220;
 
             setDropdownCurrentPos({
@@ -95,11 +94,9 @@ const Header = () => {
         setActiveDropdown(type);
     };
 
-    // Close logic
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && dropdownRef.current.contains(event.target)) return;
-            // Check if clicked exactly on one of the toggle buttons
             if (userBtnRef.current?.contains(event.target) ||
                 catBtnRef.current?.contains(event.target) ||
                 tagBtnRef.current?.contains(event.target)) {
@@ -130,96 +127,54 @@ const Header = () => {
         navigate('/');
     };
 
-<<<<<<< Updated upstream
-    // Hiển thị menu
-    const dropdownContent = (
-        <div
-            className="dropdown-menu-portal"
-            ref={dropdownRef}
-            style={{
-                top: `${dropdownCurrentPos.top}px`,
-                left: `${dropdownCurrentPos.left}px`,
-                position: 'fixed',
-                width: '220px',
-                zIndex: 99999
-            }}
-        >
-            <Link to="/profile" className="dropdown-item" onClick={() => setIsOpen(false)}>
-                <FaUser /> <span>Hồ sơ cá nhân</span>
-            </Link>
-            <Link to="/settings" className="dropdown-item" onClick={() => setIsOpen(false)}>
-                <FaCog /> <span>Cài đặt</span>
-            </Link>
-            <div className="dropdown-divider"></div>
-            <button onClick={handleLogout} className="dropdown-item text-danger">
-                <FaSignOutAlt /> <span>Đăng xuất</span>
-            </button>
-        </div>
-    );
-=======
-    const handleFilterClick = (type, id) => {
-        setActiveDropdown(null);
-        navigate(`/courses?${type}=${id}`);
-    };
-
     const renderDropdownContent = () => {
         if (!activeDropdown) return null;
 
-        let content = null;
-        let width = '220px';
-
         if (activeDropdown === 'user') {
-            content = (
-                <>
+            return (
+                <div className="dropdown-menu-portal" ref={dropdownRef} style={commonStyle}>
                     <Link to="/profile" className="dropdown-item" onClick={() => setActiveDropdown(null)}>
-                        <FaUser /> <span>Hồ sơ cá nhân</span>
+                        <FaUser className="item-icon" /> <span>Hồ sơ cá nhân</span>
                     </Link>
                     <Link to="/settings" className="dropdown-item" onClick={() => setActiveDropdown(null)}>
-                        <FaCog /> <span>Cài đặt</span>
+                        <FaCog className="item-icon" /> <span>Cài đặt</span>
                     </Link>
                     <div className="dropdown-divider"></div>
                     <button onClick={handleLogout} className="dropdown-item text-danger">
-                        <FaSignOutAlt /> <span>Đăng xuất</span>
+                        <FaSignOutAlt className="item-icon" /> <span>Đăng xuất</span>
                     </button>
-                </>
+                </div>
             );
-        } else if (activeDropdown === 'categories') {
-            content = categories.length > 0 ? categories.map(c => (
-                <button key={c.id} className="dropdown-item" onClick={() => handleFilterClick('category', c.id)}>
-                    <span>{c.name}</span>
-                </button>
-            )) : <div style={{ padding: '10px', color: '#cbd5e1' }}>Không có danh mục</div>;
-        } else if (activeDropdown === 'tags') {
-            content = tags.length > 0 ? tags.map(t => (
-                <button key={t.id} className="dropdown-item" onClick={() => handleFilterClick('tag', t.id)}>
-                    <span>#{t.name}</span>
-                </button>
-            )) : <div style={{ padding: '10px', color: '#cbd5e1' }}>Không có tags</div>;
         }
 
-        return (
-            <div
-                className="dropdown-menu-portal"
-                ref={dropdownRef}
-                style={{
-                    top: `${dropdownCurrentPos.top}px`,
-                    left: `${dropdownCurrentPos.left}px`,
-                    position: 'fixed',
-                    width: width,
-                    zIndex: 99999,
-                    maxHeight: '300px',
-                    overflowY: 'auto'
-                }}
-            >
-                {content}
-            </div>
-        );
+        if (activeDropdown === 'categories') {
+            return (
+                <div className="dropdown-menu-portal" ref={dropdownRef} style={commonStyle}>
+                    {categories.length > 0 ? categories.map(cat => (
+                        <Link key={cat.id} to={`/courses?category=${cat.id}`} className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                            {cat.name}
+                        </Link>
+                    )) : <div className="dropdown-empty">Không có thể loại</div>}
+                </div>
+            );
+        }
+
+        if (activeDropdown === 'tags') {
+            return (
+                <div className="dropdown-menu-portal" ref={dropdownRef} style={commonStyle}>
+                    {tags.length > 0 ? tags.map(tag => (
+                        <Link key={tag.id} to={`/courses?tag=${tag.id}`} className="dropdown-item" onClick={() => setActiveDropdown(null)}>
+                            {tag.name}
+                        </Link>
+                    )) : <div className="dropdown-empty">Không có tags</div>}
+                </div>
+            );
+        }
+        return null;
     };
->>>>>>> Stashed changes
 
     return (
         <header className="app-header">
-            {/* Left Side: Logo + Navigation */}
             <div className="header-left">
                 <Link to="/courses" style={{ textDecoration: 'none', marginRight: '30px' }}>
                     <h1 className="logo-text">AcaSparkX</h1>
@@ -227,8 +182,6 @@ const Header = () => {
 
                 <nav className="main-nav">
                     <Link to="/courses" className="nav-link">Khóa học</Link>
-
-                    {/* Categories */}
                     <button
                         ref={catBtnRef}
                         onClick={(e) => toggleDropdown(e, 'categories')}
@@ -237,7 +190,6 @@ const Header = () => {
                         Thể loại <FaChevronDown size={12} />
                     </button>
 
-                    {/* Tags */}
                     <button
                         ref={tagBtnRef}
                         onClick={(e) => toggleDropdown(e, 'tags')}
@@ -248,22 +200,8 @@ const Header = () => {
                 </nav>
             </div>
 
-<<<<<<< Updated upstream
-            <nav className="nav-menu">
-                {(user?.role === 'admin' || user?.role === 'teacher') && (
-                    <Link
-                        to={user.role === 'admin' ? "/admin/dashboard" : "/teacher/dashboard"}
-                        className="nav-link management-link"
-                    >
-                        Quản lý
-                    </Link>
-                )}
-                <Link to="/courses" className="nav-link">Khóa học</Link>
-=======
-            {/* Right Side: Search, Manage & User */}
             <div className="header-right">
-                {/* Search Bar */}
-                <div className="search-container" style={{ position: 'relative', marginRight: '15px' }}>
+                <div className="search-container">
                     <input
                         type="text"
                         placeholder="Tìm kiếm..."
@@ -283,7 +221,6 @@ const Header = () => {
                     </Link>
                 )}
 
->>>>>>> Stashed changes
                 <div className="nav-divider"></div>
 
                 <div className="user-menu-container">
@@ -307,6 +244,7 @@ const Header = () => {
                     )}
                 </div>
             </div>
+            {/* Sử dụng React Portal để đưa dropdown ra ngoài cùng của DOM body */}
             {activeDropdown && createPortal(renderDropdownContent(), document.body)}
         </header>
     );

@@ -9,6 +9,11 @@ const courseService = {
     getTags: () => api.get('/admin/tags').then(res => res.data),
     getTeachersList: () => api.get('/admin/teachers-list').then(res => res.data),
 
+    // Requests
+    getRequests: (params) => api.get('/admin/requests', { params }).then(res => res.data),
+    approveRequest: (id) => api.patch(`/admin/requests/${id}/approve`),
+    rejectRequest: (id) => api.patch(`/admin/requests/${id}/reject`),
+
     // Actions
     approveCourse: (id) => api.patch(`/admin/courses/${id}/approve`),
     rejectCourse(id) {

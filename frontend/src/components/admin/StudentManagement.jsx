@@ -6,26 +6,34 @@ const StudentManagement = () => {
     const [activeTab, setActiveTab] = useState('all'); // all, students, teachers, pending
     const [searchTerm, setSearchTerm] = useState('');
     const [accounts, setAccounts] = useState([]);
+    const [cvRequests, setCvRequests] = useState([]); // Store CV requests separately or mixed? Better separate.
     const [loading, setLoading] = useState(true);
-    const [editingUser, setEditingUser] = useState(null); // User being edited
+    const [editingUser, setEditingUser] = useState(null);
+    const [viewingCv, setViewingCv] = useState(null); // URL of CV to view
 
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            let roleFilter = activeTab === 'all' ? '' : activeTab;
-            // Map tabs to backend filters
-            if (activeTab === 'students') roleFilter = 'student_only';
-            if (activeTab === 'pending') roleFilter = 'pending_teacher';
-            // 'teachers' maps directly
+            if (activeTab === 'pending') {
+                // Fetch CV Requests instead of Users
+                const data = await userService.getCvRequests();
+                setCvRequests(data.data || []);
+                setAccounts([]); // Clear accounts to avoid confusion
+            } else {
+                let roleFilter = activeTab === 'all' ? '' : activeTab;
+                if (activeTab === 'students') roleFilter = 'student_only';
+                // if (activeTab === 'pending') roleFilter = 'pending_teacher'; // Now handled by getCvRequests
 
-            const params = {
-                search: searchTerm,
-                role: roleFilter
-            };
-            const data = await userService.getUsers(params);
-            setAccounts(data.data || []); // Assuming Laravel pagination response structure
+                const params = {
+                    search: searchTerm,
+                    role: roleFilter
+                };
+                const data = await userService.getUsers(params);
+                setAccounts(data.data || []);
+                setCvRequests([]);
+            }
         } catch (error) {
-            console.error("Failed to fetch users", error);
+            console.error("Failed to fetch data", error);
         } finally {
             setLoading(false);
         }
@@ -34,7 +42,7 @@ const StudentManagement = () => {
     useEffect(() => {
         const timeout = setTimeout(() => {
             fetchUsers();
-        }, 500); // Debounce search
+        }, 500);
         return () => clearTimeout(timeout);
     }, [activeTab, searchTerm]);
 
@@ -50,29 +58,31 @@ const StudentManagement = () => {
         }
     };
 
-    const handleRejectTeacher = async (id) => {
-        if (window.confirm('Từ chối yêu cầu làm giảng viên? User sẽ trở về trạng thái học viên.')) {
+    const handleApproveCv = async (reqId) => {
+        if (window.confirm('Xác nhận duyệt yêu cầu và nâng cấp user lên Giảng viên?')) {
             try {
-                // Assuming rejection sends them back to normal student? 
-                // Alternatively, backend handles this logically via "reject" endpoint or just setting status active + role student.
-                // Let's assume we just set them back to 'student' role which clears pending status if needed, 
-                // OR we just keep them as student but status active.
-                // Plan said "Revoke Teacher: Downgrade teacher to student."
-                // For pending, we might just want to set status to active?
-                // Backend logic: "If promoting... status=active". 
-                // For rejecting: we probably just want to set status back to active (if they were pending).
-                // But the 'role' endpoint doesn't explicitly handle 'reject'.
-                // Let's use updateStatus('active') if they are just pending status?
-                // Or maybe updateRole('student')? 
-                // Let's try updateRole('student') as safest.
-                await userService.updateRole(id, 'student');
-                // Also ensure status is active if it was pending?
-                // Let's call updateStatus just to be sure if role update doesn't handle it.
-                // Actually, let's just use updateRole('student') and if that fails we can debug.
+                await userService.approveCvRequest(reqId);
+                fetchUsers(); // Refresh list
+            } catch (error) {
+                alert('Có lỗi xảy ra.');
+            }
+        }
+    };
+
+    const handleRejectCv = async (reqId) => {
+        if (window.confirm('Từ chối yêu cầu này?')) {
+            try {
+                await userService.rejectCvRequest(reqId);
                 fetchUsers();
             } catch (error) {
                 alert('Có lỗi xảy ra.');
             }
+        }
+    };
+
+    const handleRejectTeacher = async (id) => { /* Keeping for backward compat if needed, but CV flow uses request ID */
+        if (window.confirm('Từ chối yêu cầu?')) {
+            try { await userService.updateRole(id, 'student'); fetchUsers(); } catch (e) { alert('Error'); }
         }
     };
 
@@ -95,7 +105,7 @@ const StudentManagement = () => {
                 await userService.updateStatus(id, newStatus);
                 fetchUsers();
             } catch (error) {
-                alert('Không thể thay đổi trạng thái user này (có thể là admin).');
+                alert('Không thể thay đổi trạng thái user này.');
             }
         }
     };
@@ -111,9 +121,108 @@ const StudentManagement = () => {
         }
     };
 
-    // Derived Data for rendering (now simpler as main filtering is backend-side)
-    const getDisplayUsers = () => {
-        return accounts;
+    const renderTableContent = () => {
+        if (activeTab === 'pending') {
+            // Render CV Requests Table
+            return (
+                <tbody>
+                    {cvRequests.length > 0 ? (
+                        cvRequests.map(req => (
+                            <tr key={req.id} style={styles.tr}>
+                                <td style={{ ...styles.td, fontWeight: '600' }}>{req.user?.name || 'Unknown'}</td>
+                                <td style={styles.td}>{req.user?.email}</td>
+                                <td style={styles.td}>
+                                    {req.image_url ? (
+                                        <button
+                                            style={{ ...styles.iconBtnInfo, width: 'auto', padding: '5px 10px', fontSize: '0.8rem' }}
+                                            onClick={() => setViewingCv(req.image_url)}
+                                        >
+                                            Xem CV/Ảnh
+                                        </button>
+                                    ) : <span style={{ color: '#94a3b8' }}>Không có ảnh</span>}
+                                </td>
+                                <td style={styles.td}>{new Date(req.created_at).toLocaleDateString('vi-VN')}</td>
+                                <td style={styles.td}>
+                                    <span style={getStatusBadgeStyle(req.status === 0 ? 'pending_teacher' : (req.status === 1 ? 'active' : 'banned'))}>
+                                        {req.status === 0 ? 'Chờ duyệt' : (req.status === 1 ? 'Đã duyệt' : 'Từ chối')}
+                                    </span>
+                                </td>
+                                <td style={styles.td}>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        {req.status === 0 && (
+                                            <>
+                                                <button style={styles.iconBtnSuccess} onClick={() => handleApproveCv(req.id)} title="Duyệt">
+                                                    <FaUserCheck />
+                                                </button>
+                                                <button style={styles.iconBtnDanger} onClick={() => handleRejectCv(req.id)} title="Từ chối">
+                                                    <FaUserTimes />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr><td colSpan="6" style={{ ...styles.td, textAlign: 'center', padding: '30px' }}>Không có yêu cầu nào.</td></tr>
+                    )}
+                </tbody>
+            );
+        }
+
+        // Render Users Table
+        return (
+            <tbody>
+                {accounts.length > 0 ? (
+                    accounts.map(account => (
+                        <tr key={account.id} style={styles.tr}>
+                            <td style={{ ...styles.td, fontWeight: '600' }}>{account.name}</td>
+                            <td style={styles.td}>{account.email}</td>
+                            <td style={styles.td}>
+                                <span style={getRoleBadgeStyle(account.role)}>
+                                    {getRoleLabel(account.role)}
+                                </span>
+                            </td>
+                            <td style={styles.td}>{new Date(account.created_at || Date.now()).toLocaleDateString('vi-VN')}</td>
+                            <td style={styles.td}>
+                                <span style={getStatusBadgeStyle(account.status)}>
+                                    {getStatusLabel(account.status)}
+                                </span>
+                            </td>
+                            <td style={styles.td}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button style={styles.iconBtnInfo} onClick={() => setEditingUser(account)} title="Chỉnh sửa">
+                                        <FaEdit />
+                                    </button>
+                                    {/* Traditional Promote (Manual) */}
+                                    {account.role === 'student' && account.status !== 'pending_teacher' && account.status !== 'banned' && (
+                                        <button style={styles.iconBtnSuccess} onClick={() => handleApproveTeacher(account.id)} title="Nâng cấp lên Giảng viên">
+                                            <FaChalkboardTeacher />
+                                        </button>
+                                    )}
+                                    {account.role === 'teacher' && account.status !== 'banned' && (
+                                        <button style={styles.iconBtnWarning} onClick={() => handleRevokeTeacher(account.id)} title="Thu hồi quyền GV">
+                                            <FaUserTimes />
+                                        </button>
+                                    )}
+                                    {account.role !== 'admin' && (
+                                        <button
+                                            style={account.status === 'banned' ? styles.iconBtnSuccess : styles.iconBtnDanger}
+                                            onClick={() => handleToggleBan(account.id, account.status)}
+                                            title={account.status === 'banned' ? "Kích hoạt lại" : "Ban tài khoản"}
+                                        >
+                                            {account.status === 'banned' ? <FaUnlock /> : <FaBan />}
+                                        </button>
+                                    )}
+                                </div>
+                            </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr><td colSpan="6" style={{ ...styles.td, textAlign: 'center', padding: '30px', color: '#94a3b8' }}>Không tìm thấy dữ liệu phù hợp.</td></tr>
+                )}
+            </tbody>
+        );
     };
 
     return (
@@ -121,10 +230,9 @@ const StudentManagement = () => {
             <div style={styles.header}>
                 <div>
                     <h2 style={styles.title}>Quản lý Người Dùng</h2>
-                    <p style={styles.subtitle}>Quản lý tất cả thành viên trong hệ thống (API Real-time)</p>
+                    <p style={styles.subtitle}>Quản lý tất cả thành viên trong hệ thống.</p>
                 </div>
-
-                {/* Search Bar */}
+                {/* Search Bar not useful for CV Request tab yet unless we filter specifically, but keeping it visible is fine */}
                 <div style={styles.searchBox}>
                     <FaSearch style={{ color: '#94a3b8' }} />
                     <input
@@ -142,7 +250,7 @@ const StudentManagement = () => {
                 <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} icon={<FaUsers />} label="Tất cả" />
                 <TabButton active={activeTab === 'students'} onClick={() => setActiveTab('students')} icon={<FaUserGraduate />} label="Học viên" />
                 <TabButton active={activeTab === 'teachers'} onClick={() => setActiveTab('teachers')} icon={<FaChalkboardTeacher />} label="Giảng viên" />
-                <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} icon={<FaHistory />} label="Chờ duyệt GV" />
+                <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} icon={<FaHistory />} label="Yêu cầu GV" />
             </div>
 
             {/* Table Area */}
@@ -159,84 +267,13 @@ const StudentManagement = () => {
                             <tr>
                                 <th style={styles.th}>Họ tên</th>
                                 <th style={styles.th}>Email</th>
-                                <th style={styles.th}>Vai trò</th>
-                                <th style={styles.th}>Ngày tham gia</th>
+                                <th style={styles.th}>{activeTab === 'pending' ? 'Hồ sơ' : 'Vai trò'}</th>
+                                <th style={styles.th}>{activeTab === 'pending' ? 'Ngày gửi' : 'Ngày tham gia'}</th>
                                 <th style={styles.th}>Trạng thái</th>
                                 <th style={styles.th}>Hành động</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {getDisplayUsers().length > 0 ? (
-                                getDisplayUsers().map(account => (
-                                    <tr key={account.id} style={styles.tr}>
-                                        <td style={{ ...styles.td, fontWeight: '600' }}>{account.name}</td>
-                                        <td style={styles.td}>{account.email}</td>
-                                        <td style={styles.td}>
-                                            <span style={getRoleBadgeStyle(account.role)}>
-                                                {getRoleLabel(account.role)}
-                                            </span>
-                                        </td>
-                                        <td style={styles.td}>{new Date(account.created_at || Date.now()).toLocaleDateString('vi-VN')}</td>
-                                        <td style={styles.td}>
-                                            <span style={getStatusBadgeStyle(account.status)}>
-                                                {getStatusLabel(account.status)}
-                                            </span>
-                                        </td>
-                                        <td style={styles.td}>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                {/* Edit Button */}
-                                                <button style={styles.iconBtnInfo} onClick={() => setEditingUser(account)} title="Chỉnh sửa">
-                                                    <FaEdit />
-                                                </button>
-
-                                                {/* Role & Status Actions */}
-                                                {/* Approve Pending Teacher */}
-                                                {account.status === 'pending_teacher' && (
-                                                    <>
-                                                        <button style={styles.iconBtnSuccess} onClick={() => handleApproveTeacher(account.id)} title="Duyệt lên Giảng viên">
-                                                            <FaUserCheck />
-                                                        </button>
-                                                        <button style={styles.iconBtnDanger} onClick={() => handleRejectTeacher(account.id)} title="Từ chối">
-                                                            <FaUserTimes />
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* Promote Regular Student */}
-                                                {account.role === 'student' && account.status !== 'pending_teacher' && account.status !== 'banned' && (
-                                                    <button style={styles.iconBtnSuccess} onClick={() => handleApproveTeacher(account.id)} title="Nâng cấp lên Giảng viên">
-                                                        <FaChalkboardTeacher />
-                                                    </button>
-                                                )}
-
-                                                {account.role === 'teacher' && account.status !== 'banned' && (
-                                                    <button style={styles.iconBtnWarning} onClick={() => handleRevokeTeacher(account.id)} title="Thu hồi quyền GV">
-                                                        <FaUserTimes />
-                                                    </button>
-                                                )}
-
-                                                {/* Ban/Activate */}
-                                                {account.role !== 'admin' && ( // Cannot ban admin
-                                                    <button
-                                                        style={account.status === 'banned' ? styles.iconBtnSuccess : styles.iconBtnDanger}
-                                                        onClick={() => handleToggleBan(account.id, account.status)}
-                                                        title={account.status === 'banned' ? "Kích hoạt lại" : "Ban tài khoản"}
-                                                    >
-                                                        {account.status === 'banned' ? <FaUnlock /> : <FaBan />}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="6" style={{ ...styles.td, textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
-                                        Không tìm thấy dữ liệu phù hợp.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
+                        {renderTableContent()}
                     </table>
                 )}
             </div>
@@ -272,6 +309,19 @@ const StudentManagement = () => {
                                 <button type="submit" style={styles.saveBtn}>Lưu thay đổi</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Preview Modal */}
+            {viewingCv && (
+                <div style={styles.modalOverlay} onClick={() => setViewingCv(null)}>
+                    <div style={{ ...styles.modalContent, width: 'auto', maxWidth: '80%', padding: '10px', backgroundColor: 'transparent', boxShadow: 'none' }} onClick={e => e.stopPropagation()}>
+                        <img src={`http://localhost:8000${viewingCv}`} alt="CV Preview" style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '8px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }} />
+                        <button
+                            onClick={() => setViewingCv(null)}
+                            style={{ position: 'absolute', top: '20px', right: '20px', background: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontWeight: 'bold' }}
+                        >X</button>
                     </div>
                 </div>
             )}

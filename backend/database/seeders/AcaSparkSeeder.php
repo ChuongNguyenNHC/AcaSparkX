@@ -15,12 +15,9 @@ use Illuminate\Support\Str;
 
 class AcaSparkSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Create initial users
+        // 1. Tạo User ban đầu
         $admin = User::firstOrCreate(
             ['email' => 'admin@acaspark.com'],
             [
@@ -48,7 +45,7 @@ class AcaSparkSeeder extends Seeder
             ]
         );
 
-        // 2. Create Categories
+        // 2. Tạo Categories
         $categories = [
             'Công Nghệ Thông Tin' => 'Các khóa học về lập trình, mạng máy tính, và phần cứng.',
             'Thiết Kế Đồ Họa' => 'Học về Photoshop, Illustrator, UI/UX Design.',
@@ -66,27 +63,11 @@ class AcaSparkSeeder extends Seeder
                     'slug' => Str::slug($name)
                 ]
             );
-            $categoryIds[$name] = $cat->id;
+            $categoryIds[] = $cat->id;
         }
 
-        // 3. Create Tags
-        $tagsList = [
-            'Web Development',
-            'Mobile App',
-            'Data Science',
-            'Machine Learning',
-            'React',
-            'VueJS',
-            'Laravel',
-            'Python',
-            'Java',
-            'C#',
-            'UI/UX',
-            'Figma',
-            'Photoshop',
-            'English'
-        ];
-
+        // 3. Tạo Tags
+        $tagsList = ['Web Development', 'Mobile App', 'Data Science', 'React', 'Laravel', 'Python', 'UI/UX'];
         $tagIds = [];
         foreach ($tagsList as $tagName) {
             $tag = Tag::firstOrCreate(
@@ -96,24 +77,15 @@ class AcaSparkSeeder extends Seeder
             $tagIds[] = $tag->id;
         }
 
-        $courses = [
+        // 4. Danh sách Khóa học
+        $coursesData = [
             [
                 'title' => 'Lập trình C# cơ bản đến nâng cao',
                 'description' => 'Khóa học giúp bạn làm chủ ngôn ngữ C# và .NET Framework thông qua các dự án thực tế.',
                 'thumbnail' => 'https://res.cloudinary.com/djrjaueb0/image/upload/v1767797004/csharp_z1cxkn.jpg',
                 'lessons' => [
-                    [
-                        'title' => 'Giới thiệu về C#',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4',
-                        'rating' => 4.8,
-                        'order' => 1
-                    ],
-                    [
-                        'title' => 'Cài đặt Visual Studio',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737210/elephants.mp4',
-                        'rating' => 4.5,
-                        'order' => 2
-                    ],
+                    ['title' => 'Giới thiệu về C#', 'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4', 'rating' => 4.8, 'order' => 1],
+                    ['title' => 'Cài đặt Visual Studio', 'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737210/elephants.mp4', 'rating' => 4.5, 'order' => 2],
                 ]
             ],
             [
@@ -121,25 +93,7 @@ class AcaSparkSeeder extends Seeder
                 'description' => 'Học Python từ con số 0 và ứng dụng vào phân tích dữ liệu chuyên nghiệp với Pandas, Numpy.',
                 'thumbnail' => 'https://res.cloudinary.com/djrjaueb0/image/upload/v1767797004/python_ptxin7.jpg',
                 'lessons' => [
-                    [
-                        'title' => 'Tại sao chọn Python?',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737190/sea_turtle.mp4',
-                        'rating' => 4.9,
-                        'order' => 1
-                    ],
-                ]
-            ],
-            [
-                'title' => 'Lập trình C++ chuyên sâu',
-                'description' => 'Khám phá thế giới C++ từ quản lý bộ nhớ đến các kỹ thuật lập trình hệ thuật lập trình hệ thống hiệu năng cao.',
-                'thumbnail' => 'https://res.cloudinary.com/djrjaueb0/image/upload/v1767797004/cpp_stcpk4.jpg',
-                'lessons' => [
-                    [
-                        'title' => 'Nguyên lý C++ và quản lý bộ nhớ',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4',
-                        'rating' => 4.7,
-                        'order' => 1
-                    ],
+                    ['title' => 'Tại sao chọn Python?', 'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737190/sea_turtle.mp4', 'rating' => 4.9, 'order' => 1],
                 ]
             ],
             [
@@ -147,48 +101,13 @@ class AcaSparkSeeder extends Seeder
                 'description' => 'Khóa học toàn diện về PHP, từ cú pháp cơ bản đến xây dựng ứng dụng web động với Laravel.',
                 'thumbnail' => 'https://res.cloudinary.com/djrjaueb0/image/upload/v1767966443/php_course_thumbnail_btvl4f.jpg',
                 'lessons' => [
-                    [
-                        'title' => 'Giới thiệu về PHP',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4',
-                        'rating' => 4.8,
-                        'order' => 1
-                    ],
-                    [
-                        'title' => 'Cài đặt môi trường XAMPP',
-                        'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737210/elephants.mp4',
-                        'rating' => 4.6,
-                        'order' => 2
-                    ],
+                    ['title' => 'Giới thiệu về PHP', 'video_url' => 'https://res.cloudinary.com/demo/video/upload/v1574737230/dog.mp4', 'rating' => 4.8, 'order' => 1],
                 ]
             ]
         ];
 
-<<<<<<< Updated upstream
-        foreach ($courses as $cData) {
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
-            $course = Course::create([
-                'instructor_id' => $teacher->id,
-                'title' => $cData['title'],
-                'description' => $cData['description'],
-                'thumbnail' => $cData['thumbnail'],
-                'status' => 'published',
-            ]);
-<<<<<<< Updated upstream
-=======
-=======
-        foreach ($courses as $index => $cData) {
-            // Assign a random category if available, or default
-            $catKey = array_rand($categoryIds);
-            $catId = $categoryIds[$catKey] ?? null;
-
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+        // 5. Chạy vòng lặp tạo Khóa học, Bài học và Gán Tag/Category
+        foreach ($coursesData as $cData) {
             $course = Course::firstOrCreate(
                 ['title' => $cData['title']],
                 [
@@ -196,32 +115,13 @@ class AcaSparkSeeder extends Seeder
                     'description' => $cData['description'],
                     'thumbnail' => $cData['thumbnail'],
                     'status' => 'published',
-<<<<<<< Updated upstream
+                    'category_id' => $categoryIds[array_rand($categoryIds)] // Gán ngẫu nhiên 1 category
                 ]
             );
-=======
-<<<<<<< Updated upstream
-                ]
-            );
-=======
-                    'category_id' => $catId // Link category
-                ]
-            );
->>>>>>> Stashed changes
 
-            // Sync random tags
-            if (!empty($tagIds)) {
-                $randomTagKeys = array_rand($tagIds, rand(1, 3)); // 1 to 3 random tags
-                $randomTagKeys = is_array($randomTagKeys) ? $randomTagKeys : [$randomTagKeys];
-                $tagsToSync = [];
-                foreach ($randomTagKeys as $key) {
-                    $tagsToSync[] = $tagIds[$key];
-                }
-                $course->tags()->sync($tagsToSync);
-            }
->>>>>>> Stashed changes
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+            // Gán ngẫu nhiên 1-3 tags
+            $randomTags = (array) array_rand(array_flip($tagIds), rand(1, 3));
+            $course->tags()->sync($randomTags);
 
             foreach ($cData['lessons'] as $lData) {
                 $lesson = Lesson::create([
@@ -241,12 +141,10 @@ class AcaSparkSeeder extends Seeder
                 ]);
             }
 
-            Enrollment::create([
-                'user_id' => $student->id,
-                'course_id' => $course->id,
-                'enroll_date' => now(),
-                'progress' => 0,
-            ]);
+            Enrollment::firstOrCreate(
+                ['user_id' => $student->id, 'course_id' => $course->id],
+                ['enroll_date' => now(), 'progress' => 0]
+            );
         }
     }
 }

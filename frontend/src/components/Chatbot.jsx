@@ -75,6 +75,15 @@ const Chatbot = () => {
 
     const isLessonPage = location.pathname.includes('/learn/');
 
+    // Chỉ hiện chatbot ở trang:
+    // 1. /courses (Danh sách khóa học - "Home")
+    // 2. /course/:id (Chi tiết khóa học)
+    // 3. /course/:id/learn/:lessonId (Học/Video)
+    // Logic: pathname starts with '/course'
+    const shouldShowChatbot = location.pathname.startsWith('/course');
+
+    if (!shouldShowChatbot) return null;
+
     return (
         <div className="chatbot-container">
             {!isOpen && (
