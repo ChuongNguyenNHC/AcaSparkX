@@ -104,4 +104,38 @@ class AuthController extends Controller
             'message' => 'Đăng xuất thành công'
         ]);
     }
+    /* Đổi Mật Khẩu */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed|different:current_password',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Mật khẩu hiện tại không chính xác',
+                'errors' => ['current_password' => ['Mật khẩu hiện tại không đúng']]
+            ], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đổi mật khẩu thành công'
+        ]);
+    }
 }

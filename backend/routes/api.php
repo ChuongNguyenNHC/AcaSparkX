@@ -16,7 +16,21 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/{id}', [CourseController::class, 'show']);
+<<<<<<< Updated upstream
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+=======
+<<<<<<< Updated upstream
+
+=======
+<<<<<<< Updated upstream
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+=======
+Route::get('/public/categories', [CourseController::class, 'getCategories']);
+Route::get('/public/tags', [CourseController::class, 'getTags']);
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 Route::post('/chatbot/consult', [ChatbotController::class, 'consult']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -27,6 +41,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     // Teacher Routes
@@ -38,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/lessons/{id}', [TeacherContentController::class, 'update']); // Using POST for update with file upload often easier
         Route::delete('/lessons/{id}', [TeacherContentController::class, 'destroy']);
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
         Route::get('/courses', [TeacherCourseController::class, 'index']);
         Route::post('/courses', [TeacherCourseController::class, 'storeCourse']);
         Route::put('/courses/{id}', [TeacherCourseController::class, 'updateCourse']);
@@ -46,6 +74,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/courses', [TeacherCourseController::class, 'index']);
         Route::post('/courses', [TeacherCourseController::class, 'storeCourse']);
 
+<<<<<<< Updated upstream
+=======
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         // Course Requests
         Route::get('/requests', [CourseRequestController::class, 'index']);
         Route::post('/requests', [CourseRequestController::class, 'store']);
@@ -66,13 +99,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/courses', [\App\Http\Controllers\Api\AdminCourseController::class, 'store']); // Create
         Route::patch('/courses/{id}/approve', [\App\Http\Controllers\Api\AdminCourseController::class, 'approve']);
         Route::patch('/courses/{id}/reject', [\App\Http\Controllers\Api\AdminCourseController::class, 'reject']);
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+        Route::patch('/courses/{id}/hide', [\App\Http\Controllers\Api\AdminCourseController::class, 'hide']);
+        Route::patch('/courses/{id}/unhide', [\App\Http\Controllers\Api\AdminCourseController::class, 'unhide']);
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         Route::post('/courses/{id}', [\App\Http\Controllers\Api\AdminCourseController::class, 'update']); // Update with file upload
         Route::get('/teachers-list', [\App\Http\Controllers\Api\AdminCourseController::class, 'getTeachers']);
 
         // Categories & Tags
         Route::apiResource('/categories', \App\Http\Controllers\Api\AdminCategoryController::class);
         Route::apiResource('/tags', \App\Http\Controllers\Api\AdminTagController::class);
+<<<<<<< Updated upstream
 
 
     });
+=======
+<<<<<<< Updated upstream
+
+
+    });
+=======
+    });
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 });

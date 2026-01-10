@@ -7,6 +7,8 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Enrollment;
 use App\Models\LessonRating;
+use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -45,6 +47,54 @@ class AcaSparkSeeder extends Seeder
                 'role' => 'student',
             ]
         );
+
+        // 2. Create Categories
+        $categories = [
+            'Công Nghệ Thông Tin' => 'Các khóa học về lập trình, mạng máy tính, và phần cứng.',
+            'Thiết Kế Đồ Họa' => 'Học về Photoshop, Illustrator, UI/UX Design.',
+            'Marketing' => 'Digital Marketing, SEO, Content Marketing.',
+            'Ngoại Ngữ' => 'Tiếng Anh, Tiếng Nhật, Tiếng Hàn.',
+            'Kỹ Năng Mềm' => 'Giao tiếp, thuyệt trình, quản lý thời gian.'
+        ];
+
+        $categoryIds = [];
+        foreach ($categories as $name => $desc) {
+            $cat = Category::firstOrCreate(
+                ['name' => $name],
+                [
+                    'description' => $desc,
+                    'slug' => Str::slug($name)
+                ]
+            );
+            $categoryIds[$name] = $cat->id;
+        }
+
+        // 3. Create Tags
+        $tagsList = [
+            'Web Development',
+            'Mobile App',
+            'Data Science',
+            'Machine Learning',
+            'React',
+            'VueJS',
+            'Laravel',
+            'Python',
+            'Java',
+            'C#',
+            'UI/UX',
+            'Figma',
+            'Photoshop',
+            'English'
+        ];
+
+        $tagIds = [];
+        foreach ($tagsList as $tagName) {
+            $tag = Tag::firstOrCreate(
+                ['name' => $tagName],
+                ['slug' => Str::slug($tagName)]
+            );
+            $tagIds[] = $tag->id;
+        }
 
         $courses = [
             [
@@ -113,7 +163,32 @@ class AcaSparkSeeder extends Seeder
             ]
         ];
 
+<<<<<<< Updated upstream
         foreach ($courses as $cData) {
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+            $course = Course::create([
+                'instructor_id' => $teacher->id,
+                'title' => $cData['title'],
+                'description' => $cData['description'],
+                'thumbnail' => $cData['thumbnail'],
+                'status' => 'published',
+            ]);
+<<<<<<< Updated upstream
+=======
+=======
+        foreach ($courses as $index => $cData) {
+            // Assign a random category if available, or default
+            $catKey = array_rand($categoryIds);
+            $catId = $categoryIds[$catKey] ?? null;
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             $course = Course::firstOrCreate(
                 ['title' => $cData['title']],
                 [
@@ -121,8 +196,32 @@ class AcaSparkSeeder extends Seeder
                     'description' => $cData['description'],
                     'thumbnail' => $cData['thumbnail'],
                     'status' => 'published',
+<<<<<<< Updated upstream
                 ]
             );
+=======
+<<<<<<< Updated upstream
+                ]
+            );
+=======
+                    'category_id' => $catId // Link category
+                ]
+            );
+>>>>>>> Stashed changes
+
+            // Sync random tags
+            if (!empty($tagIds)) {
+                $randomTagKeys = array_rand($tagIds, rand(1, 3)); // 1 to 3 random tags
+                $randomTagKeys = is_array($randomTagKeys) ? $randomTagKeys : [$randomTagKeys];
+                $tagsToSync = [];
+                foreach ($randomTagKeys as $key) {
+                    $tagsToSync[] = $tagIds[$key];
+                }
+                $course->tags()->sync($tagsToSync);
+            }
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
             foreach ($cData['lessons'] as $lData) {
                 $lesson = Lesson::create([
