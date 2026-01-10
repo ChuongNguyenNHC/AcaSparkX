@@ -442,7 +442,7 @@ const StatusBadge = ({ status }) => {
     }
 
     return (
-        <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', color: color, backgroundColor: bg }}>
+        <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', whiteSpace: 'nowrap', color: color, backgroundColor: bg }}>
             {label}
         </span>
     );
