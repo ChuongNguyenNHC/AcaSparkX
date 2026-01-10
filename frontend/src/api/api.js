@@ -18,9 +18,11 @@ api.interceptors.request.use((config) => {
 });
 
 export const courseAPI = {
-    getAll: () => api.get('/courses'),
+    getAll: (params) => api.get('/courses', { params }),
     getDetails: (id) => api.get(`/courses/${id}`),
     enroll: (id) => api.post(`/courses/${id}/enroll`),
+    getPublicCategories: () => api.get('/public/categories'),
+    getPublicTags: () => api.get('/public/tags'),
 };
 
 export const lessonAPI = {

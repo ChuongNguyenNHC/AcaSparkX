@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { courseAPI } from '../api/api';
@@ -7,6 +7,7 @@ import './CourseSelection.css';
 
 const CourseSelection = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,8 +17,18 @@ const CourseSelection = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Fetching courses...");
-        const response = await courseAPI.getAll();
+
+        const params = {};
+        const catId = searchParams.get('category');
+        const tagId = searchParams.get('tag');
+        const search = searchParams.get('search');
+
+        if (catId) params.category_id = catId;
+        if (tagId) params.tag_id = tagId;
+        if (search) params.search = search;
+
+        console.log("Fetching courses with params:", params);
+        const response = await courseAPI.getAll(params);
         console.log("Courses response:", response.data);
         setCourses(response.data.data || []);
       } catch (error) {
@@ -28,7 +39,7 @@ const CourseSelection = () => {
       }
     };
     fetchCourses();
-  }, []);
+  }, [searchParams]);
 
   const handleCourseClick = (courseId) => {
     navigate(`/course/${courseId}`);
@@ -82,26 +93,44 @@ const CourseSelection = () => {
     <div className="course-page-container">
       <Header />
       <main className="course-main">
-        <h2 className="page-title">Các khóa học hiện có</h2>
-        <div className="course-grid">
-          {courses.map(course => (
-            <div key={course.id} className="course-card">
-              <div className="course-image-wrapper" style={{ '--bg-url': `url(${course.thumbnail})` }}>
-                <img src={course.thumbnail} alt={course.title} className="course-image" />
+        <h2 className="page-title" style={{ marginBottom: '30px' }}>Các khóa học hiện có</h2>
+
+        {courses.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+            <p>Không tìm thấy khóa học nào phù hợp.</p>
+            <button
+              onClick={() => navigate('/courses')}
+              style={{ marginTop: '10px', padding: '8px 16px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        ) : (
+          <div className="course-grid">
+            {courses.map(course => (
+              <div key={course.id} className="course-card">
+                <div className="course-image-wrapper" style={{ '--bg-url': `url(${course.thumbnail && course.thumbnail.startsWith('http') ? course.thumbnail : `http://localhost:8000/storage/${course.thumbnail}`})` }}>
+                  <img
+                    src={course.thumbnail && course.thumbnail.startsWith('http') ? course.thumbnail : (course.thumbnail ? `http://localhost:8000/storage/${course.thumbnail}` : null)}
+                    alt={course.title}
+                    className="course-image"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}
+                  />
+                </div>
+                <div className="course-content">
+                  <h3 className="course-title">{course.title}</h3>
+                  <p className="course-description">{course.description}</p>
+                  <button
+                    className="enroll-btn"
+                    onClick={() => handleCourseClick(course.id)}
+                  >
+                    Xem chi tiết
+                  </button>
+                </div>
               </div>
-              <div className="course-content">
-                <h3 className="course-title">{course.title}</h3>
-                <p className="course-description">{course.description}</p>
-                <button
-                  className="enroll-btn"
-                  onClick={() => handleCourseClick(course.id)}
-                >
-                  Xem chi tiết
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
       <Footer />
     </div>
